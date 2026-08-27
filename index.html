@@ -6,6 +6,8 @@
     <title>Venezia Sammel-Bestellung</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Google Font for a modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,6 +80,14 @@
                         </button>
                     </div>
                 </div>
+                <!-- Comment / Sonderwunsch -->
+                <div class="mt-3">
+                    <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer select-none">
+                        <input type="checkbox" id="commentToggle" class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500">
+                        <span>Sonderwunsch / Kommentar hinzufügen</span>
+                    </label>
+                    <input type="text" id="commentInput" placeholder="z.B. ohne Zwiebel, extra scharf, ..." class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow hidden">
+                </div>
                 <!-- Error Message Display -->
                 <p id="error-message" class="text-red-500 text-sm mt-2 h-4"></p>
             </div>
@@ -108,6 +118,11 @@
                             <!-- Total price will be rendered here -->
                         </div>
                     </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+                    <button id="exportExcelBtn" class="flex items-center gap-2 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus-ring transition-colors text-sm">
+                        Als Excel exportieren
+                    </button>
                 </div>
             </div>
 
@@ -419,6 +434,8 @@
             const errorMessage = document.getElementById('error-message');
             const customOrderToggle = document.getElementById('customOrderToggle');
             const firmenangebotToggle = document.getElementById('firmenangebotToggle');
+            const commentToggle = document.getElementById('commentToggle');
+            const commentInput = document.getElementById('commentInput');
             const resetOrdersBtn = document.getElementById('resetOrdersBtn');
             const FIRMENANGEBOT_PRICE = 9.50;
 
@@ -506,7 +523,10 @@
                     const priceFormatted = order.price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
 
                     const orderText = document.createElement('span');
-                    orderText.innerHTML = `<span class="font-semibold">${order.name}</span> bestellt <span class="text-red-600">${order.item}</span> für <span class="font-bold">${priceFormatted}</span>`;
+                    const commentHtml = order.comment
+                        ? ` <span class="text-xs italic text-gray-500">(${order.comment})</span>`
+                        : '';
+                    orderText.innerHTML = `<span class="font-semibold">${order.name}</span> bestellt <span class="text-red-600">${order.item}</span> für <span class="font-bold">${priceFormatted}</span>${commentHtml}`;
 
                     const deleteBtn = document.createElement('button');
                     deleteBtn.textContent = 'Löschen';
@@ -556,10 +576,13 @@
                 `;
             }
 
+            let currentOrders = [];
+
             // --- DATABASE INTERACTIONS ---
             function listenForOrders() {
                 onSnapshot(ordersCollectionRef, (snapshot) => {
                     const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    currentOrders = orders;
                     renderOrders(orders);
                 });
             }
@@ -569,6 +592,7 @@
                 const isCustom = customOrderToggle.checked;
                 const item = isCustom ? otherMenuSelect.value : pizzaSelect.value;
                 const price = parseFloat(priceInput.value);
+                const comment = commentToggle.checked ? commentInput.value.trim() : '';
 
                 if (!name || !item || isNaN(price) || price <= 0) {
                     errorMessage.textContent = 'Bitte alle Felder korrekt ausfüllen.';
@@ -578,7 +602,11 @@
                 errorMessage.textContent = '';
 
                 try {
-                    await addDoc(ordersCollectionRef, { name, item, price });
+                    const orderData = { name, item, price };
+                    if (comment) {
+                        orderData.comment = comment;
+                    }
+                    await addDoc(ordersCollectionRef, orderData);
                     // Reset form fields
                     nameInput.value = '';
                     pizzaSelect.selectedIndex = 0;
@@ -586,6 +614,9 @@
                     priceInput.value = '';
                     priceInput.disabled = false;
                     firmenangebotToggle.checked = false;
+                    commentToggle.checked = false;
+                    commentInput.value = '';
+                    commentInput.classList.add('hidden');
                     nameInput.focus();
                 } catch (error) {
                     console.error("Error adding document: ", error);
@@ -631,11 +662,69 @@
                 }
             }
 
+            // --- EXCEL EXPORT ---
+            function exportToExcel() {
+                if (currentOrders.length === 0) {
+                    errorMessage.textContent = 'Keine Bestellungen zum Exportieren vorhanden.';
+                    return;
+                }
+                errorMessage.textContent = '';
+
+                // Sheet 1: Einzelbestellungen
+                const individualRows = currentOrders.map(order => ({
+                    'Name': order.name,
+                    'Bestellung': order.item,
+                    'Preis (€)': order.price,
+                    'Kommentar': order.comment || ''
+                }));
+                const wsIndividual = XLSX.utils.json_to_sheet(individualRows);
+                wsIndividual['!cols'] = [{ wch: 20 }, { wch: 30 }, { wch: 12 }, { wch: 30 }];
+
+                // Sheet 2: Zusammenfassung
+                const itemCounts = currentOrders.reduce((acc, order) => {
+                    if (!acc[order.item]) {
+                        acc[order.item] = { anzahl: 0 };
+                    }
+                    acc[order.item].anzahl += 1;
+                    return acc;
+                }, {});
+                const summaryRows = Object.keys(itemCounts)
+                    .sort((a, b) => a.localeCompare(b, 'de'))
+                    .map(item => ({
+                        'Gericht': item,
+                        'Anzahl': itemCounts[item].anzahl
+                    }));
+                const total = currentOrders.reduce((sum, order) => sum + (order.price || 0), 0);
+                summaryRows.push({ 'Gericht': '', 'Anzahl': '' });
+                summaryRows.push({ 'Gericht': 'Gesamtsumme (€)', 'Anzahl': total.toFixed(2) });
+                const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+                wsSummary['!cols'] = [{ wch: 30 }, { wch: 12 }];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, wsIndividual, 'Einzelbestellungen');
+                XLSX.utils.book_append_sheet(wb, wsSummary, 'Zusammenfassung');
+
+                const today = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(wb, `Venezia_Bestellung_${today}.xlsx`);
+            }
+
+            document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+
             // --- EVENT LISTENERS ---
             addOrderBtn.addEventListener('click', addOrder);
             resetOrdersBtn.addEventListener('click', resetOrders);
-            [nameInput, priceInput].forEach(input => {
+            [nameInput, priceInput, commentInput].forEach(input => {
                 input.addEventListener('keypress', e => e.key === 'Enter' && addOrder());
+            });
+
+            commentToggle.addEventListener('change', () => {
+                const isChecked = commentToggle.checked;
+                commentInput.classList.toggle('hidden', !isChecked);
+                if (isChecked) {
+                    commentInput.focus();
+                } else {
+                    commentInput.value = '';
+                }
             });
 
             customOrderToggle.addEventListener('change', () => {
