@@ -475,7 +475,13 @@
                     priceInput.disabled = true;
                 } else {
                     priceInput.disabled = false;
-                    handleMenuSelectChange(pizzaSelect);
+                    if (pizzaSelect.selectedIndex > 0) {
+                        // Eine Pizza ist bereits gewählt -> Preis aus der Speisekarte wiederherstellen.
+                        handleMenuSelectChange(pizzaSelect);
+                    } else {
+                        // Noch keine Pizza gewählt -> Preisfeld leeren.
+                        priceInput.value = '';
+                    }
                 }
             });
 
