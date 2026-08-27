@@ -48,15 +48,15 @@
                         <label for="nameInput" class="block text-sm font-medium text-gray-700 mb-1">Dein Name</label>
                         <input type="text" id="nameInput" placeholder="Max Mustermann" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow">
                     </div>
-                    <!-- Pizza/Custom Selection -->
+                    <!-- Pizza/Rest-der-Karte Selection -->
                     <div class="md:col-span-2">
                         <label for="pizzaSelect" class="block text-sm font-medium text-gray-700 mb-1">Wähle deine Pizza</label>
                         <select id="pizzaSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow bg-white"></select>
-                        <input type="text" id="customOrderInput" placeholder="z.B. Spaghetti Carbonara" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow hidden">
+                        <select id="otherMenuSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow bg-white hidden"></select>
                         <div class="mt-2">
                             <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer select-none">
                                 <input type="checkbox" id="customOrderToggle" class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500">
-                                <span>Eigene Bestellung eingeben (nicht Pizza)</span>
+                                <span>Keine Pizza – Rest der Speisekarte wählen</span>
                             </label>
                         </div>
                     </div>
@@ -64,6 +64,12 @@
                     <div class="md:col-span-1">
                         <label for="priceInput" class="block text-sm font-medium text-gray-700 mb-1">Preis (€)</label>
                         <input type="number" id="priceInput" placeholder="z.B. 12.50" step="0.1" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow">
+                        <div class="mt-2">
+                            <label id="firmenangebotLabel" class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer select-none">
+                                <input type="checkbox" id="firmenangebotToggle" class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500">
+                                <span>Firmenangebot (€ 9,50)</span>
+                            </label>
+                        </div>
                     </div>
                     <!-- Add Button -->
                     <div class="md:col-span-1 self-end">
@@ -161,8 +167,7 @@
             let db, auth;
             let ordersCollectionRef;
 
-            // --- DATA: Venezia Pizzakarte (Stand aktuelle Speisekarte) ---
-            // Preise werden bei Auswahl automatisch ins Preisfeld übernommen.
+            // --- DATA: Venezia Pizzakarte ---
             const veneziaMenu = [
                 { nr: "01", name: "Margherita", price: 9.90 },
                 { nr: "02", name: "Al Funghi", price: 9.50 },
@@ -207,6 +212,183 @@
                 { nr: "41", name: "Prosciutto", price: 13.50 }
             ];
 
+            // --- DATA: Rest der Speisekarte (alles außer Pizza), gruppiert nach Kategorie ---
+            const otherMenu = {
+                "Suppen": [
+                    { nr: "51", name: "Fritattensuppe", price: 5.50 },
+                    { nr: "52", name: "Zwiebelsuppe", price: 6.50 },
+                    { nr: "53", name: "Tomatensuppe", price: 5.50 },
+                    { nr: "54", name: "Knoblauchsuppe", price: 6.50 },
+                    { nr: "55", name: "Leberknödelsuppe", price: 6.50 }
+                ],
+                "Warme Vorspeisen": [
+                    { nr: "60", name: "Gebackener Emmantaler", price: 9.50 },
+                    { nr: "62", name: "Shrimps Saganaki", price: 10.50 }
+                ],
+                "Kalte Vorspeisen": [
+                    { nr: "70", name: "Tzatziki", price: 7.90 },
+                    { nr: "71", name: "Feta", price: 7.90 }
+                ],
+                "Salate": [
+                    { nr: "78", name: "Steirischer Backhendelsalat", price: 13.50 },
+                    { nr: "79", name: "Chefsalat", price: 12.90 },
+                    { nr: "80", name: "Salat Mistro", price: 5.90 },
+                    { nr: "81", name: "Salat di Pollo", price: 12.50 },
+                    { nr: "82", name: "Putenstreifensalat", price: 12.50 },
+                    { nr: "83", name: "Insalata Tonno", price: 11.90 },
+                    { nr: "84", name: "Insalata di Mare", price: 13.50 },
+                    { nr: "85", name: "Shrimpssalat", price: 13.50 },
+                    { nr: "86", name: "Griechischer Bauernsalat", price: 11.50 },
+                    { nr: "89", name: "Vegetarische Gemüselaibchen", price: 12.90 }
+                ],
+                "Pasta": [
+                    { nr: "91", name: "Carbonara all'italiana", price: 10.90 },
+                    { nr: "92", name: "Matriciana", price: 12.50 },
+                    { nr: "93", name: "Verdure", price: 10.90 },
+                    { nr: "94", name: "Bolognese", price: 11.50 },
+                    { nr: "95", name: "Di Mare", price: 12.90 },
+                    { nr: "96", name: "Alla Shrimps (scharf)", price: 12.90 },
+                    { nr: "98", name: "Napolitana", price: 9.90 },
+                    { nr: "100", name: "Arabiatta (scharf)", price: 11.50 },
+                    { nr: "102", name: "Con Polo", price: 12.90 },
+                    { nr: "107", name: "Gorgonzola", price: 11.90 },
+                    { nr: "109", name: "Al Forno", price: 12.90 },
+                    { nr: "110", name: "Formaggio", price: 11.90 }
+                ],
+                "Al Forno": [
+                    { nr: "103", name: "Lasagne", price: 13.50 },
+                    { nr: "104", name: "Lasagne mit Gemüse", price: 12.90 },
+                    { nr: "105", name: "Lasagne Salmone", price: 13.90 }
+                ],
+                "Burger (mit Pommes)": [
+                    { nr: "141", name: "Cheeseburger", price: 12.90 },
+                    { nr: "142", name: "Bacon Burger", price: 12.90 },
+                    { nr: "143", name: "Chickenburger", price: 12.90 },
+                    { nr: "144", name: "Hot Chilli Burger", price: 16.90 },
+                    { nr: "145", name: "Veggy Burger", price: 12.50 }
+                ],
+                "Fleisch": [
+                    { nr: "121", name: "Grillkotelett", price: 14.50 },
+                    { nr: "122", name: "Lammkotelett", price: 17.90 },
+                    { nr: "123", name: "Cevapcici", price: 12.90 },
+                    { nr: "124", name: "Gyros", price: 16.90 },
+                    { nr: "125", name: "Kotopollo Gyros", price: 16.90 },
+                    { nr: "127", name: "Mix Souvlaki", price: 15.90 },
+                    { nr: "128", name: "Kotopollo Piperato", price: 14.90 },
+                    { nr: "129", name: "Bekri Mezes", price: 16.90 },
+                    { nr: "130", name: "Saltimboca Alla Romana", price: 16.90 },
+                    { nr: "131", name: "Champignonschnitzel", price: 14.90 },
+                    { nr: "133", name: "Korfuplatte", price: 17.90 },
+                    { nr: "134", name: "Curry Huhn", price: 15.90 },
+                    { nr: "135", name: "Kebapteller", price: 14.90 },
+                    { nr: "136", name: "Grillplatte für 2 Pers.", price: 59.90 },
+                    { nr: "137", name: "Araradteller", price: 14.90 },
+                    { nr: "138", name: "Athenateller", price: 15.90 },
+                    { nr: "139", name: "Klassisches Rindsgulasch", price: 13.90 }
+                ],
+                "Schnitzel-Ecke": [
+                    { nr: "150", name: "Wienerschnitzel", price: 13.90 },
+                    { nr: "151", name: "Putenschnitzel", price: 14.90 },
+                    { nr: "152", name: "Cordon Bleu", price: 15.90 },
+                    { nr: "153", name: "Puten Cordon", price: 16.90 }
+                ],
+                "Fisch": [
+                    { nr: "160", name: "Calamari Fritti", price: 13.90 },
+                    { nr: "162", name: "Calamari Alla Grilla", price: 16.90 },
+                    { nr: "163", name: "Zanderfilet", price: 17.90 },
+                    { nr: "164", name: "Scampi Alla Grilla", price: 17.90 },
+                    { nr: "165", name: "Venezia Fischplatte für 2 Pers.", price: 59.90 }
+                ],
+                "Kids": [
+                    { nr: "146", name: "Putenschnitzel (Kids)", price: 10.90 },
+                    { nr: "147", name: "Chicken Nuggets", price: 10.90 },
+                    { nr: "-", name: "Pommes (Portion)", price: 4.90 },
+                    { nr: "148", name: "Berner Würstel", price: 10.90 },
+                    { nr: "149", name: "Chicken Wings", price: 12.90 }
+                ],
+                "Desserts": [
+                    { nr: "171", name: "Schoko-Gugelhupf", price: 5.90 },
+                    { nr: "172", name: "Schoko-Gugelhupf mit Eis", price: 6.50 },
+                    { nr: "173", name: "Tiramisu", price: 6.50 },
+                    { nr: "174", name: "Palatschinken", price: 6.50 },
+                    { nr: "175", name: "gemischtes Eis", price: 5.90 }
+                ],
+                "Getränke – Alkoholfrei": [
+                    { nr: "-", name: "Cola / Fanta / Sprite / Almdudler 0,33L", price: 3.50 },
+                    { nr: "-", name: "Cola / Fanta / Sprite / Almdudler 0,5L", price: 4.20 },
+                    { nr: "-", name: "Sodawasser 0,33L", price: 2.30 },
+                    { nr: "-", name: "Sodawasser 0,5L", price: 3.10 },
+                    { nr: "-", name: "Soda Zitrone 0,33L", price: 2.90 },
+                    { nr: "-", name: "Soda Zitrone 0,5L", price: 3.80 },
+                    { nr: "-", name: "Römerquelle prickelnd/still 0,33L", price: 3.10 },
+                    { nr: "-", name: "Pago Fruchtsaft 0,33L", price: 3.50 },
+                    { nr: "-", name: "Pago Fruchtsaft 0,5L", price: 4.50 },
+                    { nr: "-", name: "Coca Cola & Coca Cola Zero 0,33L", price: 3.60 },
+                    { nr: "-", name: "Eistee Pfirsich/Zitrone 0,33L", price: 3.50 },
+                    { nr: "-", name: "Eistee Pfirsich/Zitrone 0,5L", price: 4.20 },
+                    { nr: "-", name: "Spezi 0,33L", price: 3.50 },
+                    { nr: "-", name: "Spezi 0,5L", price: 4.20 },
+                    { nr: "-", name: "Apfelsaft/Orangensaft 0,33L", price: 3.20 },
+                    { nr: "-", name: "Apfelsaft/Orangensaft 0,5L", price: 4.20 },
+                    { nr: "-", name: "Red Bull 0,25L", price: 4.20 }
+                ],
+                "Getränke – Bier": [
+                    { nr: "-", name: "Bier vom Fass (Kaiser/Gösser) 0,33L", price: 4.40 },
+                    { nr: "-", name: "Bier vom Fass (Kaiser/Gösser) 0,5L", price: 5.10 },
+                    { nr: "-", name: "Radler 0,33L", price: 4.60 },
+                    { nr: "-", name: "Radler 0,5L", price: 5.40 },
+                    { nr: "-", name: "Weizenbier (Weihenstephan) 0,5L", price: 5.50 },
+                    { nr: "-", name: "Wieselburger Stammbräu 0,5L", price: 5.50 },
+                    { nr: "-", name: "Alkoholfrei (Gösser) 0,5L", price: 5.20 },
+                    { nr: "-", name: "Alkoholfrei (Weihenstephan) 0,5L", price: 5.50 },
+                    { nr: "-", name: "Zwicklbier hell (Gösser) 0,5L", price: 5.50 },
+                    { nr: "-", name: "Zwicklbier dunkel (Gösser) 0,5L", price: 5.50 }
+                ],
+                "Getränke – Wein (1/8L)": [
+                    { nr: "-", name: "Grüner Veltliner 1/8L", price: 2.80 },
+                    { nr: "-", name: "Zweigelt 1/8L", price: 2.80 },
+                    { nr: "-", name: "Riesling 1/8L", price: 3.60 },
+                    { nr: "-", name: "Merlot 1/8L", price: 3.60 },
+                    { nr: "-", name: "Chianti 1/8L", price: 3.60 },
+                    { nr: "-", name: "Gelber Muskateller 1/8L", price: 3.90 }
+                ],
+                "Getränke – Spritzer & Aperitif": [
+                    { nr: "-", name: "Gespritzter Weiß 0,25L", price: 3.50 },
+                    { nr: "-", name: "Gespritzter Rot 0,25L", price: 3.50 },
+                    { nr: "-", name: "Sommer Gespritzter 0,25L", price: 3.30 },
+                    { nr: "-", name: "Süsse Gespritzter 0,25L", price: 4.30 },
+                    { nr: "-", name: "Cola Rot/Weiß 0,25L", price: 4.30 },
+                    { nr: "-", name: "Aperol Spritz 0,25L", price: 5.90 },
+                    { nr: "-", name: "Aperol Spritz mit Prosecco 0,25L", price: 6.90 },
+                    { nr: "-", name: "Hugo 0,25L", price: 5.90 }
+                ],
+                "Getränke – Schnäpse & Longdrinks": [
+                    { nr: "-", name: "Rum 2cl", price: 3.50 },
+                    { nr: "-", name: "Ouzo 2cl", price: 3.50 },
+                    { nr: "-", name: "Marille 2cl", price: 3.50 },
+                    { nr: "-", name: "Nuss 2cl", price: 3.50 },
+                    { nr: "-", name: "Jägermeister 20ml", price: 3.50 },
+                    { nr: "-", name: "Whisky Cola", price: 4.90 },
+                    { nr: "-", name: "Bacardi Cola", price: 4.90 },
+                    { nr: "-", name: "Wodka Orange", price: 4.90 },
+                    { nr: "-", name: "Wodka mit Red Bull", price: 5.40 },
+                    { nr: "-", name: "Captain Morgan mit Cola", price: 4.90 },
+                    { nr: "-", name: "Henkel Trocken Sekt (Flasche)", price: 19.50 }
+                ],
+                "Getränke – Kaffee & Tee": [
+                    { nr: "-", name: "Kleiner Brauner", price: 3.10 },
+                    { nr: "-", name: "Verlängerter", price: 3.60 },
+                    { nr: "-", name: "Gr. Brauner", price: 4.20 },
+                    { nr: "-", name: "Cappuccino", price: 4.30 },
+                    { nr: "-", name: "Cafe Latte", price: 4.90 },
+                    { nr: "-", name: "Früchtetee", price: 3.20 },
+                    { nr: "-", name: "Schwarzer Tee", price: 3.20 },
+                    { nr: "-", name: "Grüner Tee", price: 3.20 },
+                    { nr: "-", name: "Pfefferminz Tee", price: 3.20 },
+                    { nr: "-", name: "Kamillentee", price: 3.20 }
+                ]
+            };
+
             // The pizzeria currently active for ordering.
             const activePizzeriaId = 'venezia';
 
@@ -228,6 +410,7 @@
             // --- ELEMENTS ---
             const nameInput = document.getElementById('nameInput');
             const pizzaSelect = document.getElementById('pizzaSelect');
+            const otherMenuSelect = document.getElementById('otherMenuSelect');
             const priceInput = document.getElementById('priceInput');
             const addOrderBtn = document.getElementById('addOrderBtn');
             const individualOrdersContainer = document.getElementById('individualOrders');
@@ -235,8 +418,9 @@
             const totalPriceContainer = document.getElementById('totalPriceContainer');
             const errorMessage = document.getElementById('error-message');
             const customOrderToggle = document.getElementById('customOrderToggle');
-            const customOrderInput = document.getElementById('customOrderInput');
+            const firmenangebotToggle = document.getElementById('firmenangebotToggle');
             const resetOrdersBtn = document.getElementById('resetOrdersBtn');
+            const FIRMENANGEBOT_PRICE = 9.50;
 
             // --- INITIALIZATION ---
             function populatePizzaSelect() {
@@ -251,12 +435,47 @@
                 });
             }
 
-            // Fills the price field automatically when a pizza is chosen from the list.
-            pizzaSelect.addEventListener('change', () => {
-                const selectedOption = pizzaSelect.options[pizzaSelect.selectedIndex];
+            function populateOtherMenuSelect() {
+                otherMenuSelect.innerHTML = '<option value="" disabled selected>Gericht/Getränk aus der Speisekarte wählen...</option>';
+                Object.keys(otherMenu).forEach(category => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = category;
+                    otherMenu[category].forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.name;
+                        option.dataset.price = item.price;
+                        const label = item.nr === "-" ? item.name : `${item.nr}. ${item.name}`;
+                        option.textContent = `${label} – € ${item.price.toFixed(2).replace('.', ',')}`;
+                        optgroup.appendChild(option);
+                    });
+                    otherMenuSelect.appendChild(optgroup);
+                });
+            }
+
+            // Fills the price field automatically when an item is chosen from either list.
+            // If the Firmenangebot checkbox is active (pizza only), it overrides the price with € 9,50.
+            function handleMenuSelectChange(selectEl) {
+                if (selectEl === pizzaSelect && firmenangebotToggle.checked) {
+                    priceInput.value = FIRMENANGEBOT_PRICE.toFixed(2);
+                    return;
+                }
+                const selectedOption = selectEl.options[selectEl.selectedIndex];
                 const price = selectedOption ? selectedOption.dataset.price : null;
                 if (price) {
                     priceInput.value = parseFloat(price).toFixed(2);
+                }
+            }
+            pizzaSelect.addEventListener('change', () => handleMenuSelectChange(pizzaSelect));
+            otherMenuSelect.addEventListener('change', () => handleMenuSelectChange(otherMenuSelect));
+
+            // Firmenangebot: € 9,50 pro Pizza, überschreibt den Preis und sperrt das Feld.
+            firmenangebotToggle.addEventListener('change', () => {
+                if (firmenangebotToggle.checked) {
+                    priceInput.value = FIRMENANGEBOT_PRICE.toFixed(2);
+                    priceInput.disabled = true;
+                } else {
+                    priceInput.disabled = false;
+                    handleMenuSelectChange(pizzaSelect);
                 }
             });
 
@@ -342,7 +561,7 @@
             async function addOrder() {
                 const name = nameInput.value.trim();
                 const isCustom = customOrderToggle.checked;
-                const item = isCustom ? customOrderInput.value.trim() : pizzaSelect.value;
+                const item = isCustom ? otherMenuSelect.value : pizzaSelect.value;
                 const price = parseFloat(priceInput.value);
 
                 if (!name || !item || isNaN(price) || price <= 0) {
@@ -357,13 +576,10 @@
                     // Reset form fields
                     nameInput.value = '';
                     pizzaSelect.selectedIndex = 0;
-                    customOrderInput.value = '';
+                    otherMenuSelect.selectedIndex = 0;
                     priceInput.value = '';
                     priceInput.disabled = false;
-                    if (customOrderToggle.checked) {
-                        customOrderToggle.checked = false;
-                        customOrderToggle.dispatchEvent(new Event('change'));
-                    }
+                    firmenangebotToggle.checked = false;
                     nameInput.focus();
                 } catch (error) {
                     console.error("Error adding document: ", error);
@@ -412,18 +628,25 @@
             // --- EVENT LISTENERS ---
             addOrderBtn.addEventListener('click', addOrder);
             resetOrdersBtn.addEventListener('click', resetOrders);
-            [nameInput, customOrderInput, priceInput].forEach(input => {
+            [nameInput, priceInput].forEach(input => {
                 input.addEventListener('keypress', e => e.key === 'Enter' && addOrder());
             });
 
             customOrderToggle.addEventListener('change', () => {
                 const isChecked = customOrderToggle.checked;
                 pizzaSelect.classList.toggle('hidden', isChecked);
-                customOrderInput.classList.toggle('hidden', !isChecked);
+                otherMenuSelect.classList.toggle('hidden', !isChecked);
                 priceInput.value = '';
                 priceInput.disabled = false;
+
+                // Firmenangebot gilt nur für Pizza - bei "Rest der Speisekarte" sperren/zurücksetzen.
+                firmenangebotToggle.checked = false;
+                firmenangebotToggle.disabled = isChecked;
+                document.getElementById('firmenangebotLabel').classList.toggle('opacity-50', isChecked);
+
                 if (isChecked) {
-                    customOrderInput.focus();
+                    otherMenuSelect.selectedIndex = 0;
+                    otherMenuSelect.focus();
                 } else {
                     pizzaSelect.selectedIndex = 0;
                     pizzaSelect.focus();
@@ -432,6 +655,7 @@
 
             // --- INITIAL CALLS ---
             populatePizzaSelect();
+            populateOtherMenuSelect();
         });
     </script>
 
