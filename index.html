@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pizza Bestell-App mit Datenbank</title>
+    <title>Venezia Sammel-Bestellung</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Font for a modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Apply the Inter font to the whole page */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7fafc; /* A light gray background */
+            background-color: #f7fafc;
         }
-        /* Custom focus styles for better accessibility */
         .focus-ring:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3); /* Red-ish ring */
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
         }
-        /* Smooth transition for hiding/showing elements */
-        .hidden {
-            display: none;
+        .hidden { display: none; }
+        input:disabled {
+            background-color: #f3f4f6;
+            color: #6b7280;
         }
     </style>
 </head>
@@ -39,7 +38,7 @@
 
         <!-- Main Content Area -->
         <main class="space-y-8">
-            
+
             <!-- Input Form Card -->
             <div class="bg-white p-6 rounded-xl shadow-lg transition-all hover:shadow-xl">
                 <h2 class="text-2xl font-semibold mb-4 border-b pb-3 text-gray-700">Neue Bestellung aufgeben (für Venezia)</h2>
@@ -51,13 +50,13 @@
                     </div>
                     <!-- Pizza/Custom Selection -->
                     <div class="md:col-span-2">
-                        <label for="pizzaSelect" class="block text-sm font-medium text-gray-700 mb-1">Wähle deine Bestellung</label>
+                        <label for="pizzaSelect" class="block text-sm font-medium text-gray-700 mb-1">Wähle deine Pizza</label>
                         <select id="pizzaSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow bg-white"></select>
                         <input type="text" id="customOrderInput" placeholder="z.B. Spaghetti Carbonara" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-red-500 focus-ring transition-shadow hidden">
                         <div class="mt-2">
                             <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer select-none">
                                 <input type="checkbox" id="customOrderToggle" class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500">
-                                <span>Eigene Bestellung eingeben</span>
+                                <span>Eigene Bestellung eingeben (nicht Pizza)</span>
                             </label>
                         </div>
                     </div>
@@ -105,21 +104,22 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Pizzeria Info Cards -->
+
+            <!-- Pizzeria Info Card: Venezia -->
             <div class="bg-white p-6 rounded-xl shadow-lg">
                 <div class="flex justify-between items-center mb-4 border-b pb-3">
                     <h2 class="text-2xl font-semibold text-gray-700">Pizzeria-Infos: Venezia</h2>
-                    <a href="https://www.venezia.co.at/wp-content/uploads/2025/01/Venezia_Speisekarte_2025.pdfkomprimiert1.pdf" target="_blank" class="bg-white text-red-600 font-semibold py-2 px-4 border border-red-300 rounded-lg hover:bg-red-50 focus-ring transition-all text-sm">
-                        Speisekarte
+                    <a href="https://www.venezia.co.at/" target="_blank" class="bg-white text-red-600 font-semibold py-2 px-4 border border-red-300 rounded-lg hover:bg-red-50 focus-ring transition-all text-sm">
+                        Website
                     </a>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-600">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">Angebote</h3>
                         <div class="space-y-2">
-                            <p><strong class="font-medium text-red-600">Firmen Angebot:</strong> Jede Pizza € 9,00 + gratis Zustellung.</p>
-                            <p><strong class="font-medium text-red-600">Selbstabhol Aktion:</strong> Ab 5 Pizzen, jede Pizza € 9,50.</p>
+                            <p><strong class="font-medium text-red-600">Firmen Angebot:</strong> Jede Pizza € 9,50 + gratis Zustellung ab 4 Pizzen.</p>
+                            <p><strong class="font-medium text-red-600">Abhol-Aktion:</strong> Ab 5 Pizzen, jede Pizza € 9,90.</p>
+                            <p><strong class="font-medium text-red-600">Pizzatag:</strong> Jeden Donnerstag.</p>
                         </div>
                     </div>
                     <div>
@@ -127,61 +127,8 @@
                         <div class="space-y-1">
                             <p><strong>Adresse:</strong> Marktplatz 10, 4311 Schwertberg</p>
                             <p><strong>Telefon:</strong> +43 7262 62366</p>
-                            <p><strong>Öffnungszeiten:</strong> 10:00 - 22:00 Uhr</p>
-                            <p class="font-medium">Mittwoch Ruhetag (außer Feiertage)</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <div class="flex justify-between items-center mb-4 border-b pb-3">
-                    <h2 class="text-2xl font-semibold text-gray-700">Pizzeria-Infos: Bella Italia</h2>
-                    <a href="https://www.pizzeria-schwertberg.at/" target="_blank" class="bg-white text-red-600 font-semibold py-2 px-4 border border-red-300 rounded-lg hover:bg-red-50 focus-ring transition-all text-sm">
-                        Speisekarte
-                    </a>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-600">
-                    <div>
-                         <h3 class="text-lg font-semibold text-gray-800 mb-2">Angebote</h3>
-                         <p><strong class="font-medium text-red-600">Donnerstag Pizzatag:</strong> Jede Pizza € 9,90.</p>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Kontakt & Öffnungszeiten</h3>
-                        <div class="space-y-1">
-                            <p><strong>Adresse:</strong> Aisttal Straße 17, 4311 Schwertberg</p>
-                            <p><strong>Telefon:</strong> +43 664 99423576</p>
-                            <p><strong>Öffnungszeiten:</strong> Mi - Mo, 11:00 - 22:00 Uhr</p>
-                            <p><strong>Warme Küche:</strong> bis 21:00 Uhr</p>
-                            <p class="font-medium">Dienstag Ruhetag</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <div class="flex justify-between items-center mb-4 border-b pb-3">
-                    <h2 class="text-2xl font-semibold text-gray-700">Pizzeria-Infos: Ristorante La Vita Mavec</h2>
-                    <a href="http://mavec.at/wp-content/uploads/2017/03/Pizza_Karte.pdf" target="_blank" class="bg-white text-red-600 font-semibold py-2 px-4 border border-red-300 rounded-lg hover:bg-red-50 focus-ring transition-all text-sm">
-                        Speisekarte
-                    </a>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-600">
-                    <div>
-                         <h3 class="text-lg font-semibold text-gray-800 mb-2">Angebote</h3>
-                         <p><strong class="font-medium text-red-600">Pizza zum Mitnehmen:</strong></p>
-                         <ul class="list-disc list-inside ml-2">
-                            <li>Große Pizza: € 8,40</li>
-                            <li>Kleine Pizza: € 7,90</li>
-                         </ul>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Kontakt & Öffnungszeiten</h3>
-                        <div class="space-y-1">
-                            <p><strong>Telefon:</strong> 07262 / 611 60</p>
-                            <p><strong>Öffnungszeiten:</strong> Do 10-21, Fr 10-22, Sa 10-15 Uhr</p>
-                            <p><strong>Warme Küche:</strong> Do bis 20:30, Fr bis 21:00, Sa bis 14:00 Uhr</p>
-                            <p class="font-medium">So, Mo & Feiertage geschlossen</p>
+                            <p><strong>Öffnungszeiten:</strong> Mo–Di & Do–Sa 10:00–22:00, So 10:00–21:00</p>
+                            <p class="font-medium">Mittwoch Ruhetag (außer Feiertage) · durchgehend warme Küche</p>
                         </div>
                     </div>
                 </div>
@@ -197,7 +144,7 @@
         // Firebase Authentication
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         // Firebase Firestore
-        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         document.addEventListener('DOMContentLoaded', async () => {
             // --- FIREBASE SETUP ---
@@ -214,9 +161,52 @@
             let db, auth;
             let ordersCollectionRef;
 
-            // --- DATA ---
-            const veneziaMenu = ["Margherita", "Funghi", "Cardinale", "Salami", "Prosciutto", "Hawaii", "Diavolo", "Provinciale", "Quattro Stagioni", "Capricciosa", "Tonno", "Rusticana", "Al Capone", "Quattro Formaggi", "Venezia", "Spinaci", "Calzone", "Vegetaria", "Primavera", "Frutti di Mare"];
-            
+            // --- DATA: Venezia Pizzakarte (Stand aktuelle Speisekarte) ---
+            // Preise werden bei Auswahl automatisch ins Preisfeld übernommen.
+            const veneziaMenu = [
+                { nr: "01", name: "Margherita", price: 9.90 },
+                { nr: "02", name: "Al Funghi", price: 9.50 },
+                { nr: "03", name: "Cipolla", price: 10.00 },
+                { nr: "04", name: "Cardinale", price: 10.00 },
+                { nr: "05", name: "Salami", price: 10.50 },
+                { nr: "06", name: "Al Tonno", price: 11.50 },
+                { nr: "07", name: "Toscana", price: 11.90 },
+                { nr: "08", name: "Napoli", price: 11.90 },
+                { nr: "09", name: "Italiano", price: 11.90 },
+                { nr: "10", name: "Roma", price: 11.50 },
+                { nr: "11", name: "Treviso", price: 10.90 },
+                { nr: "12", name: "Spinaci", price: 11.50 },
+                { nr: "13", name: "Firenze", price: 10.90 },
+                { nr: "14", name: "Hawai", price: 10.90 },
+                { nr: "15", name: "Diavolo", price: 11.90 },
+                { nr: "16", name: "Torino", price: 11.90 },
+                { nr: "17", name: "Provenciale", price: 11.90 },
+                { nr: "18", name: "Capricciosa", price: 12.50 },
+                { nr: "19", name: "Rusticana", price: 11.50 },
+                { nr: "20", name: "Roberto Di Mafia", price: 12.50 },
+                { nr: "21", name: "Giovanni", price: 13.50 },
+                { nr: "22", name: "Bella Italia", price: 13.50 },
+                { nr: "23", name: "Venezia", price: 11.90 },
+                { nr: "24", name: "Frutti Di Mare", price: 13.50 },
+                { nr: "25", name: "Palermo", price: 13.50 },
+                { nr: "26", name: "Quattro Formaggio", price: 11.90 },
+                { nr: "27", name: "Quattro Stagioni", price: 10.90 },
+                { nr: "28", name: "Mezapotamia", price: 10.90 },
+                { nr: "29", name: "Al Capone", price: 13.50 },
+                { nr: "30", name: "Mexicana", price: 12.90 },
+                { nr: "31", name: "Calzone (gerollt)", price: 11.50 },
+                { nr: "32", name: "Pizza Bolognese", price: 10.90 },
+                { nr: "33", name: "Bauern Pizza", price: 10.90 },
+                { nr: "34", name: "Schwertberg Pizza", price: 12.90 },
+                { nr: "35", name: "Vegetarische Pizza", price: 10.90 },
+                { nr: "36", name: "Kebap Pizza", price: 11.90 },
+                { nr: "37", name: "Pizza Dänemark", price: 12.50 },
+                { nr: "38", name: "Salami Spezial", price: 11.50 },
+                { nr: "39", name: "Salami Pikant", price: 11.90 },
+                { nr: "40", name: "Diavolo Spezial", price: 11.90 },
+                { nr: "41", name: "Prosciutto", price: 13.50 }
+            ];
+
             // The pizzeria currently active for ordering.
             const activePizzeriaId = 'venezia';
 
@@ -225,9 +215,7 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 await signInAnonymously(auth);
-                
-                // Set the database path for the active pizzeria
-                // This path creates a separate list for each pizzeria to avoid conflicts.
+
                 ordersCollectionRef = collection(db, `pizzerias/${activePizzeriaId}/orders`);
                 listenForOrders();
 
@@ -252,15 +240,25 @@
 
             // --- INITIALIZATION ---
             function populatePizzaSelect() {
-                // We only populate the menu for the active pizzeria (Venezia)
-                pizzaSelect.innerHTML = '<option value="" disabled selected>Gericht aus der Liste wählen...</option>';
-                veneziaMenu.sort().forEach(item => {
+                pizzaSelect.innerHTML = '<option value="" disabled selected>Pizza aus der Liste wählen...</option>';
+                const sortedMenu = [...veneziaMenu].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+                sortedMenu.forEach(item => {
                     const option = document.createElement('option');
-                    option.value = item;
-                    option.textContent = item;
+                    option.value = item.name;
+                    option.dataset.price = item.price;
+                    option.textContent = `${item.nr}. ${item.name} – € ${item.price.toFixed(2).replace('.', ',')}`;
                     pizzaSelect.appendChild(option);
                 });
             }
+
+            // Fills the price field automatically when a pizza is chosen from the list.
+            pizzaSelect.addEventListener('change', () => {
+                const selectedOption = pizzaSelect.options[pizzaSelect.selectedIndex];
+                const price = selectedOption ? selectedOption.dataset.price : null;
+                if (price) {
+                    priceInput.value = parseFloat(price).toFixed(2);
+                }
+            });
 
             // --- RENDER FUNCTIONS ---
             function renderOrders(orders) {
@@ -281,15 +279,15 @@
                     const li = document.createElement('li');
                     li.className = 'py-2 flex justify-between items-center';
                     const priceFormatted = order.price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-                    
+
                     const orderText = document.createElement('span');
                     orderText.innerHTML = `<span class="font-semibold">${order.name}</span> bestellt <span class="text-red-600">${order.item}</span> für <span class="font-bold">${priceFormatted}</span>`;
-                    
+
                     const deleteBtn = document.createElement('button');
                     deleteBtn.textContent = 'Löschen';
                     deleteBtn.className = 'text-xs bg-gray-200 hover:bg-red-200 text-gray-700 px-2 py-1 rounded-md transition-colors';
                     deleteBtn.onclick = () => promptToDeleteOrder(order.id);
-                    
+
                     li.appendChild(orderText);
                     li.appendChild(deleteBtn);
                     ul.appendChild(li);
@@ -309,7 +307,7 @@
                 }, {});
                 const ul = document.createElement('ul');
                 ul.className = 'divide-y divide-gray-200';
-                const sortedItems = Object.keys(itemCounts).sort();
+                const sortedItems = Object.keys(itemCounts).sort((a, b) => a.localeCompare(b, 'de'));
                 sortedItems.forEach(item => {
                     const li = document.createElement('li');
                     li.className = 'py-2 flex justify-between items-center';
@@ -321,7 +319,7 @@
                 });
                 consolidatedOrdersContainer.appendChild(ul);
             }
-            
+
             function renderTotalPrice(orders) {
                 const total = orders.reduce((sum, order) => sum + (order.price || 0), 0);
                 const totalFormatted = total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
@@ -351,9 +349,9 @@
                     errorMessage.textContent = 'Bitte alle Felder korrekt ausfüllen.';
                     return;
                 }
-                
+
                 errorMessage.textContent = '';
-                
+
                 try {
                     await addDoc(ordersCollectionRef, { name, item, price });
                     // Reset form fields
@@ -361,6 +359,7 @@
                     pizzaSelect.selectedIndex = 0;
                     customOrderInput.value = '';
                     priceInput.value = '';
+                    priceInput.disabled = false;
                     if (customOrderToggle.checked) {
                         customOrderToggle.checked = false;
                         customOrderToggle.dispatchEvent(new Event('change'));
@@ -371,7 +370,7 @@
                     errorMessage.textContent = 'Fehler beim Speichern der Bestellung.';
                 }
             }
-            
+
             async function removeOrder(id) {
                 try {
                     await deleteDoc(doc(ordersCollectionRef, id));
@@ -397,7 +396,6 @@
                 errorMessage.textContent = '';
 
                 if (password === "PizzaEngel") {
-                    console.log("Password correct. Resetting all orders...");
                     try {
                         const querySnapshot = await getDocs(ordersCollectionRef);
                         const deletePromises = querySnapshot.docs.map(document => deleteDoc(document.ref));
@@ -422,9 +420,12 @@
                 const isChecked = customOrderToggle.checked;
                 pizzaSelect.classList.toggle('hidden', isChecked);
                 customOrderInput.classList.toggle('hidden', !isChecked);
+                priceInput.value = '';
+                priceInput.disabled = false;
                 if (isChecked) {
                     customOrderInput.focus();
                 } else {
+                    pizzaSelect.selectedIndex = 0;
                     pizzaSelect.focus();
                 }
             });
